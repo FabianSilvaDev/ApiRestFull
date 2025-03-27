@@ -1,52 +1,56 @@
 const express = require('express');
-const {faker} = require('@faker-js/faker')
-
 const router = express.Router();
+const productService = require('../services/productsService');
 
 //Especifico
 router.get('/products/filter', function(req,res){
   res.send('yo soy un filter')
 })
 
+const services = new productService();
+
 //dinamico
 router.get("/", (req, res) => {
-  // primero se crea un array vacio para almacenar los productos
-  const products = [];
-  // segundo se crea una variable limit que va a ser igual a size o 20 en donde size es el query que se le pasa por parametro
-  let {size} = req.query //req.query es un objeto que tiene todas las querys que se le pasan por parametro
-  // tercero se crea un for que va a iterar desde 0 hasta el limite que se le pase por parametro
-  const limit = size || 20;
-  for (let index = 0; index < limit; index++) {
-    // push se usa para agregar un elemento al array, y por ultimo se le pasa un objeto con los datos que se quieren agregar
-    products.push({
-      name: faker.commerce.product(),
-      description: faker.commerce.productDescription(),
-      price: faker.commerce.price(),
-      image: faker.image.url()
-    })
-  }
-  // se retorna el array de productos con el metodo json desde la respuesta
- res.json(products)
+  const products = services.getProducts(); // se llama a la funcion getProducts para obtener los productos
+  res.json(products)
 });
 
-
-
-router.get('/products/:productId', function(req,res){
-  const { productId } = req.params;
-  res.json({
-      productId,
-      name: 'producto 2',
-      price: 500
-    })
-} )
 
 // Crear un producto
 
 router.post("/", (req, res) => {
   const body = req.body;
-  res.json({
+  res.status(201).json({ //201 es el codigo de estado que se le pasa cuando se crea un recurso en el servidor el status es una funcion que se le pasa un codigo de estado
     message: 'created',
     data: body
+  });
+});
+
+// Actualizar un producto
+
+router.patch("/:id", (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+  res.json({
+    message: 'update',
+    data: body,
+    id
+  });
+});
+
+// lectura de un producto
+router.get('/:id', (req, res) => {
+  const { id } = req.params;
+  const product = services.getProductById(id);
+  res.json(product);
+});
+
+// Eliminar un producto
+router.delete("/:id", (req, res) => {
+  const { id } = req.params;
+  res.json({
+    message: 'delete',
+    id
   });
 });
 
